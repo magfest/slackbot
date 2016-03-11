@@ -7,22 +7,22 @@ import re
 import time
 from glob import glob
 from six.moves import _thread
-from slackbot import settings
-from slackbot.manager import PluginsManager
-from slackbot.slackclient import SlackClient
-from slackbot.dispatcher import MessageDispatcher
+from brain.manager import PluginsManager
+from brain.slackclient import SlackClient
+from brain.utils import till_end, till_white
+from brain.dispatcher import MessageDispatcher
 
 logger = logging.getLogger(__name__)
 
 
 class Bot(object):
-    def __init__(self):
+    def __init__(self, settings):
         self._client = SlackClient(
             settings.API_TOKEN,
             bot_icon=settings.BOT_ICON if hasattr(settings, 'BOT_ICON') else None,
             bot_emoji=settings.BOT_EMOJI if hasattr(settings, 'BOT_EMOJI') else None
         )
-        self._plugins = PluginsManager()
+        self._plugins = PluginsManager(settings)
         self._dispatcher = MessageDispatcher(self._client, self._plugins)
 
     def run(self):
@@ -38,19 +38,3 @@ class Bot(object):
         while True:
             time.sleep(30 * 60)
             self._client.ping()
-
-
-def respond_to(matchstr, flags=0):
-    def wrapper(func):
-        PluginsManager.commands['respond_to'][re.compile(matchstr, flags)] = func
-        logger.info('registered respond_to plugin "%s" to "%s"', func.__name__, matchstr)
-        return func
-    return wrapper
-
-
-def listen_to(matchstr, flags=0):
-    def wrapper(func):
-        PluginsManager.commands['listen_to'][re.compile(matchstr, flags)] = func
-        logger.info('registered listen_to plugin "%s" to "%s"', func.__name__, matchstr)
-        return func
-    return wrapper

@@ -5,15 +5,15 @@ import logging
 from glob import glob
 from six import PY2
 from importlib import import_module
-from slackbot import settings
-from slackbot.utils import to_utf8
+from magbot import settings
+from brain.utils import to_utf8
 
 logger = logging.getLogger(__name__)
 
 
 class PluginsManager(object):
-    def __init__(self):
-        pass
+    def __init__(self, settings):
+        self.settings = settings
 
     commands = {
         'respond_to': {},
@@ -21,10 +21,20 @@ class PluginsManager(object):
     }
 
     def init_plugins(self):
-        if hasattr(settings, 'PLUGINS'):
-            plugins = settings.PLUGINS
+        if hasattr(self.settings, 'PLUGINS'):
+            plugins = self.settings.PLUGINS
         else:
             plugins = 'slackbot.plugins'
+
+        if hasattr(self.settings, 'answer_key'):
+            self.answer_key = self.settings.answer_key
+        else:
+            self.answer_key = "$"
+
+        if hasattr(self.settings, 'db'):
+            self.db = self.settings.db
+        else:
+            self.db = None
 
         for plugin in plugins:
             self._load_plugins(plugin)
@@ -55,9 +65,14 @@ class PluginsManager(object):
 
     def get_plugins(self, category, text):
         has_matching_plugin = False
+        has_answer_key = True
+        if category == "listen_to":
+            has_answer_key = False
+            if text[0] == self.answer_key:
+                has_answer_key = True
         for matcher in self.commands[category]:
-            m = matcher.search(text)
-            if m:
+            m = matcher[0].search(text)
+            if m and has_answer_key:
                 has_matching_plugin = True
                 yield self.commands[category][matcher], to_utf8(m.groups())
 
