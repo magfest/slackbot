@@ -7,8 +7,6 @@ import requests
 from contextlib import contextmanager
 from six.moves import _thread, range, queue
 import six
-from pymongo import MongoClient
-from jira import JIRA
 
 logger = logging.getLogger(__name__)
 

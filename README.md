@@ -57,7 +57,7 @@ if __name__ == "__main__":
 ##### Configure the default answer
 Add to `slackbot_settings.py` a default_reply:
 ```python
-default_reply = "Sorry but I didn't understood you" 
+default_reply = "Sorry but I didn't understood you"
 ```
 
 ##### Configure the docs answer
@@ -134,7 +134,7 @@ from slackbot.bot import respond_to
 
 @respond_to('Give me (.*)')
 def giveme(message, something):
-    message.reply('Here is %s' % something)
+    message.reply('Here is {}'.format(something))
 ```
 
 If you would like to have a command like 'stats' and 'stats start_date end_date', you can create reg ex like so:

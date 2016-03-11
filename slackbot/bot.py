@@ -7,10 +7,10 @@ import re
 import time
 from glob import glob
 from six.moves import _thread
-from brain.manager import PluginsManager
-from brain.slackclient import SlackClient
-from brain.utils import till_end, till_white
-from brain.dispatcher import MessageDispatcher
+from slackbot.manager import PluginsManager
+from slackbot.slackclient import SlackClient
+from slackbot.utils import till_end, till_white
+from slackbot.dispatcher import MessageDispatcher
 
 logger = logging.getLogger(__name__)
 
@@ -38,3 +38,22 @@ class Bot(object):
         while True:
             time.sleep(30 * 60)
             self._client.ping()
+
+def respond_to(matchstr, flags=0, halp=""):
+    if halp == "":
+        halp = matchstr.replace("\\b", "").replace(till_white, "(until whitespace)").replace(till_end, "(until end of line)")
+    def wrapper(func):
+        PluginsManager.commands['respond_to'][tuple((re.compile(matchstr, flags), halp))] = func
+        logger.info('registered respond_to plugin "%s" to "%s"', func.__name__, matchstr)
+        return func
+    return wrapper
+
+
+def listen_to(matchstr,flags=0, halp=""):
+    if halp == "":
+        halp = matchstr.replace("\\b", "").replace(till_white, "(until whitespace)").replace(till_end, "(until end of line)")
+    def wrapper(func):
+        PluginsManager.commands['listen_to'][tuple((re.compile(matchstr, flags), halp))] = func
+        logger.info('registered listen_to plugin "%s" to "%s"', func.__name__, matchstr)
+        return func
+    return wrapper
