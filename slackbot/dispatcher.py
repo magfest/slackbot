@@ -107,10 +107,9 @@ class MessageDispatcher(object):
             default_reply += ['    • `{0}` {1}'.format(p[1]
                                                        , v.__doc__ or "")
                               for p, v in iteritems(self._plugins.commands['respond_to'])]
-
             default_reply = '\n'.join(to_utf8(default_reply))
-
         self._client.rtm_send_message(msg['channel'], default_reply)
+
     def unicode_compact(func):
     """
     Make sure the first parameter of the decorated method to be a unicode
@@ -160,6 +159,7 @@ class Message(object):
         text = self.gen_reply(text)
         self.send_webapi(text)
 
+    @unicode_compact
     def send_webapi(self, text, attachments=None):
         """
             Send a reply using Web API
