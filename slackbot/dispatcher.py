@@ -5,7 +5,8 @@ import logging
 import re
 import time
 import traceback
-from six import iteritems
+from functools import wraps
+import six
 from slackbot.manager import PluginsManager
 from slackbot.utils import to_utf8, WorkerPool, create_tmp_file, till_end, till_white
 
