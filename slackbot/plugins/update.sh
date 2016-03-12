@@ -1,6 +1,7 @@
 #!/bin/bash
 if [[ $ == 0 ]]; then
 for d in */; do
+    echo $d
     cd $d
     git fetch
     git pull
@@ -8,6 +9,7 @@ for d in */; do
 done
 else
     for d in "$@"; do
+      echo $d
       cd $d
       git fetch
       git pull
