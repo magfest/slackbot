@@ -8,6 +8,7 @@ import time
 from glob import glob
 from six.moves import _thread
 from slackbot.manager import PluginsManager
+import slackbot.globals as globs
 from slackbot.slackclient import SlackClient
 from slackbot.utils import till_end, till_white
 from slackbot.dispatcher import MessageDispatcher
@@ -16,12 +17,14 @@ logger = logging.getLogger(__name__)
 
 
 class Bot(object):
-    def __init__(self, settings):
+    def __init__(self, settings, root):
         self._client = SlackClient(
             settings.API_TOKEN,
             bot_icon=settings.BOT_ICON if hasattr(settings, 'BOT_ICON') else None,
             bot_emoji=settings.BOT_EMOJI if hasattr(settings, 'BOT_EMOJI') else None
         )
+        globs.set_db(settings)
+        globs.set_root(root)
         self._plugins = PluginsManager(settings)
         self._dispatcher = MessageDispatcher(self._client, self._plugins)
 
