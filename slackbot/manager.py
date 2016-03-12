@@ -25,11 +25,6 @@ class PluginsManager(object):
         else:
             plugins = 'slackbot.plugins'
 
-        if hasattr(self.settings, 'answer_key'):
-            self.answer_key = self.settings.answer_key
-        else:
-            self.answer_key = "$"
-
         if hasattr(self.settings, 'db'):
             self.db = self.settings.db
         else:
