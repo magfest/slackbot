@@ -1,5 +1,5 @@
 for d in */; do
-    cd d
+    cd $d
     git fetch
     git pull
     cd ..
