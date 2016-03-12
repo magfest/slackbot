@@ -6,6 +6,8 @@ from glob import glob
 from six import PY2
 from importlib import import_module
 from slackbot.utils import to_utf8
+import sys
+sys.path.insert(0, '../slackbot')
 
 logger = logging.getLogger(__name__)
 
