@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if [[ $ == 0 ]]; then
 for d in */; do
     cd $d
