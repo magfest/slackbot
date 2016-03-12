@@ -23,9 +23,10 @@ class Bot(object):
             bot_icon=settings.BOT_ICON if hasattr(settings, 'BOT_ICON') else None,
             bot_emoji=settings.BOT_EMOJI if hasattr(settings, 'BOT_EMOJI') else None
         )
-        globs.set_db(settings)
-        globs.set_root(root)
-        globs.set_name(self._client.login_data['self']['name'])
+        if hasattr(settings, 'db'):
+            globs.set_atr('db', settings.db)
+        globs.set_atr('root', root)
+        globs.set_atr('bot_name', self._client.login_data['self']['name'])
         self._plugins = PluginsManager(settings)
         self._dispatcher = MessageDispatcher(self._client, self._plugins)
 
