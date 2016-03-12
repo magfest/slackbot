@@ -6,8 +6,6 @@ from glob import glob
 from six import PY2
 from importlib import import_module
 from slackbot.utils import to_utf8
-import sys
-sys.path.insert(0, '../slackbot')
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +48,6 @@ class PluginsManager(object):
             for mod in plugin.split('.'):
                 if path_name is not None:
                     path_name = [path_name]
-                print(mod)
                 _, path_name, _ = imp.find_module(mod, path_name)
         else:
             from importlib.util import find_spec as importlib_find
