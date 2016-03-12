@@ -1,12 +1,6 @@
 
 *.pyc
 
-.idea/encodings.xml
+.idea/
 
-.idea/misc.xml
-
-.idea/modules.xml
-
-.idea/snakeman.iml
-
-.idea/workspace.xml
+magbot/

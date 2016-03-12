@@ -20,6 +20,16 @@ class MessageDispatcher(object):
         self._client = slackclient
         self._pool = WorkerPool(self.dispatch_msg)
         self._plugins = plugins
+        if hasattr(plugins.settings, "alias"):
+            temp = r'^(?:\<@(\w+)\>|('
+            for x in plugins.settings.alias:
+                temp += x + "|"
+            temp += r')):? (.*)$'
+            self.AT_MESSAGE_MATCHER = re.compile(temp)
+        else:
+            self.AT_MESSAGE_MATCHER = re.compile(r'^\<@(\w+)\>:? (.*)$')
+
+
 
     def start(self):
         self._pool.start()
@@ -73,7 +83,7 @@ class MessageDispatcher(object):
         channel = msg['channel']
 
         if channel[0] == 'C' or channel[0] == 'G':
-            m = AT_MESSAGE_MATCHER.match(text)
+            m = self.AT_MESSAGE_MATCHER.match(text)
             if not m:
                 return
             atuser, text = m.groups()
@@ -83,7 +93,7 @@ class MessageDispatcher(object):
             logger.debug('got an AT message: %s', text)
             msg['text'] = text
         else:
-            m = AT_MESSAGE_MATCHER.match(text)
+            m = self.AT_MESSAGE_MATCHER.match(text)
             if m:
                 msg['text'] = m.group(2)
         return msg
@@ -107,11 +117,11 @@ class MessageDispatcher(object):
             ]
             default_reply += ['    • `{0}` {1}'.format(p[1]
                                                        , v.__doc__ or "")
-                              for p, v in iteritems(self._plugins.commands['respond_to'])]
+                              for p, v in six.iteritems(self._plugins.commands['respond_to'])]
             default_reply = '\n'.join(to_utf8(default_reply))
         self._client.rtm_send_message(msg['channel'], default_reply)
 
-    def unicode_compact(func):
+def unicode_compact(func):
     """
     Make sure the first parameter of the decorated method to be a unicode
     object.
