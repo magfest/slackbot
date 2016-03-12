@@ -20,15 +20,9 @@ class MessageDispatcher(object):
         self._client = slackclient
         self._pool = WorkerPool(self.dispatch_msg)
         self._plugins = plugins
-        if hasattr(plugins.settings, "alias"):
-            temp = r'^(?:\<@(\w+)\>|'
-            for x in plugins.settings.alias:
-                temp += x + "|"
-            temp = temp.rstrip("|")
-            temp += r'):? (.*)$'
-            self.AT_MESSAGE_MATCHER = re.compile(temp)
-        else:
-            self.AT_MESSAGE_MATCHER = re.compile(r'^\<@(\w+)\>:? (.*)$')
+        never_matches_anything = 'a^'
+        regex_aliases = '|'.join([re.escape(s) for s in plugins.settings.ALIASES.split(',')]) if hasattr(plugins.settings, 'ALIASES') else never_matches_anything
+        self.AT_MESSAGE_MATCHER = re.compile(r'^(?:\<@(\w+)\>|({})):? (.*)$'.format(regex_aliases))
 
 
 
@@ -82,14 +76,16 @@ class MessageDispatcher(object):
     def filter_text(self, msg):
         text = msg.get('text', '')
         channel = msg['channel']
+        bot_name = self._client.login_data['self']['id']
 
         if channel[0] == 'C' or channel[0] == 'G':
             m = self.AT_MESSAGE_MATCHER.match(text)
             if not m:
                 return
-            g = m.groups()
-            atuser, text = m.groups()
-            if atuser != None and atuser != self._client.login_data['self']['id']:
+            atuser, alias, text = m.groups()
+            if alias:
+                atuser = bot_name
+            if atuser != bot_name:
                 # a channel message at other user
                 return
             logger.debug('got an AT message: %s', text)
