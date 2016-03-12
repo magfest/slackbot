@@ -64,14 +64,9 @@ class PluginsManager(object):
 
     def get_plugins(self, category, text):
         has_matching_plugin = False
-        has_answer_key = True
-        if category == "listen_to":
-            has_answer_key = False
-            if text[0] == self.answer_key:
-                has_answer_key = True
         for matcher in self.commands[category]:
             m = matcher[0].search(text)
-            if m and has_answer_key:
+            if m:
                 has_matching_plugin = True
                 yield self.commands[category][matcher], to_utf8(m.groups())
 

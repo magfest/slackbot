@@ -3,6 +3,9 @@ db = None
 
 global root
 root = None
+
+global botname
+botname = None
 def set_db(settings):
     if hasattr(settings, 'db'):
         global db
@@ -11,3 +14,7 @@ def set_db(settings):
 def set_root(folder):
     global root
     root = folder
+
+def set_name(name):
+    global botname
+    botname = name

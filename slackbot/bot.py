@@ -25,6 +25,7 @@ class Bot(object):
         )
         globs.set_db(settings)
         globs.set_root(root)
+        globs.set_name(self._client.login_data['self']['name'])
         self._plugins = PluginsManager(settings)
         self._dispatcher = MessageDispatcher(self._client, self._plugins)
 

@@ -21,10 +21,11 @@ class MessageDispatcher(object):
         self._pool = WorkerPool(self.dispatch_msg)
         self._plugins = plugins
         if hasattr(plugins.settings, "alias"):
-            temp = r'^(?:\<@(\w+)\>|('
+            temp = r'^(?:\<@(\w+)\>|'
             for x in plugins.settings.alias:
                 temp += x + "|"
-            temp += r')):? (.*)$'
+            temp = temp.rstrip("|")
+            temp += r'):? (.*)$'
             self.AT_MESSAGE_MATCHER = re.compile(temp)
         else:
             self.AT_MESSAGE_MATCHER = re.compile(r'^\<@(\w+)\>:? (.*)$')
@@ -86,8 +87,9 @@ class MessageDispatcher(object):
             m = self.AT_MESSAGE_MATCHER.match(text)
             if not m:
                 return
+            g = m.groups()
             atuser, text = m.groups()
-            if atuser != self._client.login_data['self']['id']:
+            if atuser != None and atuser != self._client.login_data['self']['id']:
                 # a channel message at other user
                 return
             logger.debug('got an AT message: %s', text)
