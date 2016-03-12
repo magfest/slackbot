@@ -48,6 +48,7 @@ class PluginsManager(object):
             for mod in plugin.split('.'):
                 if path_name is not None:
                     path_name = [path_name]
+                print(mod)
                 _, path_name, _ = imp.find_module(mod, path_name)
         else:
             from importlib.util import find_spec as importlib_find
