@@ -9,15 +9,9 @@ from functools import wraps
 import six
 from slackbot.utils import to_utf8, create_tmp_file
 from slackbot.utils import WorkerPool
-from slackbot import settings
-import settings
 
 logger = logging.getLogger(__name__)
 
-never_matches_anything = 'a^'
-regex_aliases = '|'.join([re.escape(s) for s in settings.ALIASES.split(',')]) if hasattr(settings, 'ALIASES') else never_matches_anything
-
-AT_MESSAGE_MATCHER = re.compile(r'^(?:\<@(\w+)\>|({})):? (.*)$'.format(regex_aliases))
 
 
 class MessageDispatcher(object):
