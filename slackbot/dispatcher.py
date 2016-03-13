@@ -7,12 +7,11 @@ import time
 import traceback
 from functools import wraps
 import six
-from slackbot.manager import PluginsManager
-from slackbot.utils import to_utf8, WorkerPool, create_tmp_file, till_end, till_white
+from slackbot.utils import to_utf8, create_tmp_file
+from slackbot.utils import WorkerPool
 
 logger = logging.getLogger(__name__)
 
-AT_MESSAGE_MATCHER = re.compile(r'^\<@(\w+)\>:? (.*)$')
 
 
 class MessageDispatcher(object):
