@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 till_white = "([^\s]+)"
 till_end = "(.*)"
 
-
 def download_file(url, fpath):
     logger.debug('starting to fetch %s', url)
     r = requests.get(url, stream=True)
