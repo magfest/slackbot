@@ -4,3 +4,7 @@
 .idea/
 
 magbot/
+
+settings.py
+
+reload.sh

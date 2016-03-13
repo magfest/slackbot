@@ -12,8 +12,6 @@ logger = logging.getLogger(__name__)
 
 till_white = "([^\s]+)"
 till_end = "(.*)"
-issue = "(\\S[^\\-\\s]*-[*\\d])"
-j_key = "(\\S[^\\-\\s]*)"
 
 
 def download_file(url, fpath):
