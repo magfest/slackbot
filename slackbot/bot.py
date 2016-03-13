@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class Bot(object):
-    def __init__(self, settings, root):
+    def __init__(self, settings):
         self._client = SlackClient(
             settings.API_TOKEN,
             bot_icon=settings.BOT_ICON if hasattr(settings, 'BOT_ICON') else None,
