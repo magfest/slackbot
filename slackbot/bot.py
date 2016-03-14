@@ -44,7 +44,7 @@ class Bot(object):
             time.sleep(30 * 60)
             self._client.ping()
 
-def respond_to(matchstr, flags=0, halp=""):
+def respond_to(matchstr, flags=0):
     def wrapper(func):
         PluginsManager.commands['respond_to'][re.compile(matchstr, flags)] = func
         logger.info('registered respond_to plugin "%s" to "%s"', func.__name__, matchstr)
@@ -52,7 +52,7 @@ def respond_to(matchstr, flags=0, halp=""):
     return wrapper
 
 
-def listen_to(matchstr,flags=0, halp=""):
+def listen_to(matchstr,flags=0):
     def wrapper(func):
         PluginsManager.commands['listen_to'][re.compile(matchstr, flags)] = func
         logger.info('registered listen_to plugin "%s" to "%s"', func.__name__, matchstr)
