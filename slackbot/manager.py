@@ -60,7 +60,7 @@ class PluginsManager(object):
     def get_plugins(self, category, text):
         has_matching_plugin = False
         for matcher in self.commands[category]:
-            m = matcher[0].search(text)
+            m = matcher.search(text)
             if m:
                 has_matching_plugin = True
                 yield self.commands[category][matcher], to_utf8(m.groups())

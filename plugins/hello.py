@@ -6,6 +6,9 @@ from slackbot.bot import listen_to
 
 @respond_to('hello$', re.IGNORECASE)
 def hello_reply(message):
+    """
+    Send hello directly to the bot to receive a reply
+    """
     message.reply('hello sender!')
 
 

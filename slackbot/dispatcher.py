@@ -112,8 +112,8 @@ class MessageDispatcher(object):
             default_reply = [
                 u'Bad command "{}", You can ask me one of the following questions:\n'.format(msg['text']),
             ]
-            default_reply += ['    • `{0}` {1}'.format(p[1]
-                                                       , v.__doc__ or "")
+            default_reply += ['    • `{0}` {1}'.format(p.pattern.encode('utf-8')
+                                                       , str(v.__doc__).encode('utf-8') or "")
                               for p, v in six.iteritems(self._plugins.commands['respond_to'])]
             default_reply = '\n'.join(to_utf8(default_reply))
         self._client.rtm_send_message(msg['channel'], default_reply)
