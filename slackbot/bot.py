@@ -9,6 +9,7 @@ from glob import glob
 from six.moves import _thread
 from slackbot.manager import PluginsManager
 import slackbot.globals as globs
+from slackbot import settings
 from slackbot.slackclient import SlackClient
 from slackbot.utils import till_end, till_white
 from slackbot.dispatcher import MessageDispatcher
@@ -17,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class Bot(object):
-    def __init__(self, settings):
+    def __init__(self):
         self._client = SlackClient(
             settings.API_TOKEN,
             bot_icon=settings.BOT_ICON if hasattr(settings, 'BOT_ICON') else None,
