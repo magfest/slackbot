@@ -11,10 +11,7 @@
  /dist
  /*.egg-info
  .cache
- 
-.idea/
-
-magbot/
 
 settings.py
 
+.idea/
