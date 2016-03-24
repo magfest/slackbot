@@ -3,7 +3,7 @@
 import sys
 import logging
 import logging.config
-import settings
+from slackbot import settings
 from slackbot.bot import Bot
 
 
@@ -16,7 +16,7 @@ def main():
     }
     logging.basicConfig(**kw)
     logging.getLogger('requests.packages.urllib3.connectionpool').setLevel(logging.WARNING)
-    bot = Bot(settings)
+    bot = Bot()
     bot.run()
 
 
