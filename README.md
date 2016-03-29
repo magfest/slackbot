@@ -162,3 +162,93 @@ PLUGINS = [
 ## Discussion
 
 * :hash: #python-slackbot on [freenode](https://webchat.freenode.net/?channels=python-slackbot)
+
+## DARE Development
+
+Okay so I don't really do the best at explaining things so always feel free to message me or something.
+
+If you want to develop for one of the bots that I'm currently running, or have possibly setup for you to currently run, you'll have to follow some steps to setup a local-development bot, or a new bot for running 24/7 somewhere. 
+
+For my personal setup of running the bot I use:
+
+```
+MongoDB - to manage user permissions and other information
+pymongo - to access MongoDB
+Supervisord - to remotely turn off and on the bot
+git - to download updates
+```
+
+Good luck! You'll also need to install any missing python packages that the plugins may be using before the bot will actually run!
+
+## Step 1
+
+clone [this, the one you're reading,](https://github.com/magfest/slackbot) repository to wherever you'll be running the code.
+
+## Step 2
+
+navigate to the plugins folder. slackbot/plugins, be careful NOT to go into slackbot/slackbot/plugins.
+
+(THIS THING SAYS DONT USE - REMEMBER THAT)
+
+In here clone any other plugins you'd like to have your plugin use.
+
+## Optional Starter Plugins
+
+Using my starter plugins requires installing pymongo, a MongoDB python-client library, and the use of MongoDB server. You may authenticate however you like, but the user must have the role ```dbOwner``` on the database passed through.
+
+I currently pass my database info like so:
+```
+c = MongoClient("website.com:27017")
+c.database.authenticate("user", "password", mechanism="SCRAM-SHA-1")
+ATTRIBUTES = {'db': c.database}
+```
+
+It is CRUCIAL that ATTRIBUTES has the line ```'db': c.database```
+
+DO NOT FORGET TO IMPORT MONGOCLIENT
+
+IT IS NOT ALREADY IMPORTED IN THE ```settings-example.py```
+
+my starter plugins are:
+
+```
+git clone https://github.com/migetman9/plugins-misc
+git clone https://github.com/migetman9/plugins-admin
+```
+
+if you're developing for me personally please use the following instead
+
+```
+git clone https://github.com/migetman9/plugins-misc misc
+git clone https://github.com/migetman9/plugins-admin admin
+```
+
+## Step 3
+
+In slackbot/slackbot there is a file called ```settings-example.py```, rename or duplicate this file as ```settings.py```.
+
+Instructions are above. There is a variable you may set called ```ATTRIBUTES```. Any key:value pair set here can be accessed when writing plugins by importing ```from slackbot.globals import attribtues``` and then retrieved using ```attributes['key']```
+
+## Step 4 - To Use Supervisord for the ```die``` command.
+
+THIS IS ONLY NEEDED FOR SETTING UP THE BOT TO RUN 24/7
+
+Install supervisord on unix (However you do that). 
+
+edit your supervisord.conf file and add
+
+```
+[program:slackbot]
+directory=/root/slackbot/
+command=/usr/bin/python2.7 /root/slackbot/run.py
+autostart=True
+autorestart=False
+priority=1
+stderr_logfile=/var/log/bot/slackbot.err.log
+stdout_logfile=/var/log/bot/slackbot.out.log
+```
+
+
+
+
+
