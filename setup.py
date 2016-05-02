@@ -9,7 +9,7 @@ install_requires = (
     'slacker>=0.5.5',
     'six>=1.10.0',
     'pymongo>=3.2.2',
-    'jira>=1.0.4',
+    'jira',
     'fuzzywuzzy'
 ) # yapf: disable
 
