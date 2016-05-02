@@ -12,12 +12,6 @@ PLUGINS = [
 ]
 
 # API_TOKEN = '###token###'
-botname = "slackbutt"
-vowels = ['a', 'e', 'i', 'o', 'u', 'y']
-ALIASES = ",".join([r'!', r'$', r"".join([botname.replace(x, "%s+?" % x) for x in vowels])])
-ATTRIBUTES = {
-    # 'root': os.getcwd()
-}
 #default_reply = "Sorry, what was that?"
 
 '''
