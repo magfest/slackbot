@@ -10,7 +10,6 @@ install_requires = (
     'six>=1.10.0',
     'pymongo>=3.2.2',
     'jira-python>=1.0.4',
-    'urllib',
     'fuzzywuzzy'
 ) # yapf: disable
 
