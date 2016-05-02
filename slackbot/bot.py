@@ -27,6 +27,10 @@ class Bot(object):
         if hasattr(settings, 'ATTRIBUTES'):
             for x in settings.ATTRIBUTES.keys():
                 globs.set_atr(x, settings.ATTRIBUTES[x])
+        if hasattr(settings, 'DB'):
+            globs.set_atr('db', settings.DB)
+        if hasattr(settings, 'JIRA'):
+            globs.set_atr('jira', settings.JIRA)
         globs.set_atr('bot_name', self._client.login_data['self']['name'])
         self._plugins = PluginsManager(settings)
         self._dispatcher = MessageDispatcher(self._client, self._plugins)
