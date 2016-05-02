@@ -7,7 +7,12 @@ install_requires = (
     'requests>=2.4.0',
     'websocket-client>=0.22.0',
     'slacker>=0.5.5',
-    'six>=1.10.0'
+    'six>=1.10.0',
+    'pymongo>=3.2.2',
+    'jira-python>=1.0.4',
+    'urllib',
+    'urllib2',
+    'fuzzywuzzy'
 ) # yapf: disable
 
 excludes = (

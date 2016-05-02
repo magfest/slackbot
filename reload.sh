@@ -1,4 +1,4 @@
 #!/bin/bash
-supervisorctl stop leinad
+supervisorctl stop magbot
 git pull
-supervisorctl start leinad
+supervisorctl start magbot
