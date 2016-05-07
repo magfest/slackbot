@@ -14,17 +14,26 @@ from slackbot import settings
 
 logger = logging.getLogger(__name__)
 
-never_matches_anything = 'a^'
-regex_aliases = '|'.join([re.escape(s) for s in settings.ALIASES.split(',')]) if hasattr(settings, 'ALIASES') else never_matches_anything
-
-AT_MESSAGE_MATCHER = re.compile(r'^(?:\<@(\w+)\>|({})):? (.*)$'.format(regex_aliases))
-
 
 class MessageDispatcher(object):
-    def __init__(self, slackclient, plugins):
+    def __init__(self, slackclient, plugins, errors_to):
         self._client = slackclient
         self._pool = WorkerPool(self.dispatch_msg)
         self._plugins = plugins
+        self._errors_to = None
+        if errors_to:
+            self._errors_to = self._client.find_channel_by_name(errors_to)
+            if not self._errors_to:
+                raise ValueError(
+                    'Could not find errors_to recipient {!r}'.format(
+                        errors_to))
+
+        alias_regex = ''
+        if getattr(settings, 'ALIASES', None):
+            logger.info('using aliases %s', settings.ALIASES)
+            alias_regex = '|(?P<alias>{})'.format('|'.join([re.escape(s) for s in settings.ALIASES.split(',')]))
+
+        self.AT_MESSAGE_MATCHER = re.compile(r'^(?:\<@(?P<atuser>\w+)\>:?|(?P<username>\w+):{}) ?(?P<text>.*)$'.format(alias_regex))
 
     def start(self):
         self._pool.start()
@@ -40,10 +49,21 @@ class MessageDispatcher(object):
                 try:
                     func(Message(self._client, msg), *args)
                 except:
-                    logger.exception('failed to handle message %s with plugin "%s"', text, func.__name__)
-                    reply = u'[{}] I have problem when handling "{}"\n'.format(func.__name__, text)
-                    reply += u'```\n{}\n```'.format(traceback.format_exc())
-                    self._client.rtm_send_message(msg['channel'], reply)
+                    logger.exception(
+                        'failed to handle message %s with plugin "%s"',
+                        text, func.__name__)
+                    reply = u'[{}] I had a problem handling "{}"\n'.format(
+                        func.__name__, text)
+                    tb = u'```\n{}\n```'.format(traceback.format_exc())
+                    if self._errors_to:
+                        self._client.rtm_send_message(msg['channel'], reply)
+                        self._client.rtm_send_message(self._errors_to,
+                                                      '{}\n{}'.format(reply,
+                                                                      tb))
+                    else:
+                        self._client.rtm_send_message(msg['channel'],
+                                                      '{}\n{}'.format(reply,
+                                                                      tb))
 
         if not responded and category == u'respond_to':
             self._default_reply(msg)
@@ -73,27 +93,42 @@ class MessageDispatcher(object):
         else:
             self._pool.add_task(('listen_to', msg))
 
+    def _get_bot_id(self):
+        return self._client.login_data['self']['id']
+
+    def _get_bot_name(self):
+        return self._client.login_data['self']['name']
+
     def filter_text(self, msg):
-        text = msg.get('text', '')
+        full_text = msg.get('text', '')
         channel = msg['channel']
-        bot_name = self._client.login_data['self']['id']
+        bot_name = self._get_bot_name()
+        bot_id = self._get_bot_id()
+        m = self.AT_MESSAGE_MATCHER.match(full_text)
 
         if channel[0] == 'C' or channel[0] == 'G':
-            m = AT_MESSAGE_MATCHER.match(text)
             if not m:
                 return
-            atuser, alias, text = m.groups()
+
+            matches = m.groupdict()
+
+            atuser = matches.get('atuser')
+            username = matches.get('username')
+            text = matches.get('text')
+            alias = matches.get('alias')
+
             if alias:
-                atuser = bot_name
-            if atuser != bot_name:
+                atuser = bot_id
+
+            if atuser != bot_id and username != bot_name:
                 # a channel message at other user
                 return
+
             logger.debug('got an AT message: %s', text)
             msg['text'] = text
         else:
-            m = AT_MESSAGE_MATCHER.match(text)
             if m:
-                msg['text'] = m.group(2)
+                msg['text'] = m.groupdict().get('text', None)
         return msg
 
     def loop(self):
@@ -110,26 +145,33 @@ class MessageDispatcher(object):
             from slackbot_settings import default_reply
         except ImportError:
             default_reply = [
-                u'Bad command "{}", You can ask me one of the following questions:\n'.format(msg['text']),
+                u'Bad command "{}", You can ask me one of the following '
+                u'questions:\n'.format(
+                    msg['text']),
             ]
-            default_reply += [u'    • `{0}` {1}'.format(p.pattern, v.__doc__ or "")
-                              for p, v in six.iteritems(self._plugins.commands['respond_to'])]
+            default_reply += [
+                u'    • `{0}` {1}'.format(p.pattern, v.__doc__ or "")
+                for p, v in
+                six.iteritems(self._plugins.commands['respond_to'])]
             # pylint: disable=redefined-variable-type
             default_reply = u'\n'.join(default_reply)
 
         m = Message(self._client, msg)
         m.reply(default_reply)
 
+
 def unicode_compact(func):
     """
     Make sure the first parameter of the decorated method to be a unicode
     object.
     """
+
     @wraps(func)
     def wrapped(self, text, *a, **kw):
         if not isinstance(text, six.text_type):
             text = text.decode('utf-8')
         return func(self, text, *a, **kw)
+
     return wrapped
 
 
@@ -222,5 +264,6 @@ class Message(object):
 
     def docs_reply(self):
         reply = [u'    • `{0}` {1}'.format(v.__name__, v.__doc__ or '')
-                 for _, v in six.iteritems(self._plugins.commands['respond_to'])]
+                 for _, v in
+                 six.iteritems(self._plugins.commands['respond_to'])]
         return u'\n'.join(reply)
