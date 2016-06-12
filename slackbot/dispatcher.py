@@ -41,9 +41,14 @@ class MessageDispatcher(object):
     def dispatch_msg(self, msg):
         category = msg[0]
         msg = msg[1]
-        text = msg['text']
+        if not self._dispatch_msg_handler(category, msg):
+            if category == u'respond_to':
+                if not self._dispatch_msg_handler('default_reply', msg):
+                    self._default_reply(msg)
+
+    def _dispatch_msg_handler(self, category, msg):
         responded = False
-        for func, args in self._plugins.get_plugins(category, text):
+        for func, args in self._plugins.get_plugins(category, msg['text']):
             if func:
                 responded = True
                 try:
@@ -51,9 +56,9 @@ class MessageDispatcher(object):
                 except:
                     logger.exception(
                         'failed to handle message %s with plugin "%s"',
-                        text, func.__name__)
+                        msg['text'], func.__name__)
                     reply = u'[{}] I had a problem handling "{}"\n'.format(
-                        func.__name__, text)
+                        func.__name__, msg['text'])
                     tb = u'```\n{}\n```'.format(traceback.format_exc())
                     if self._errors_to:
                         self._client.rtm_send_message(msg['channel'], reply)
@@ -64,9 +69,7 @@ class MessageDispatcher(object):
                         self._client.rtm_send_message(msg['channel'],
                                                       '{}\n{}'.format(reply,
                                                                       tb))
-
-        if not responded and category == u'respond_to':
-            self._default_reply(msg)
+        return responded
 
     def _on_new_message(self, msg):
         # ignore edits
@@ -141,9 +144,8 @@ class MessageDispatcher(object):
             time.sleep(1)
 
     def _default_reply(self, msg):
-        try:
-            from slackbot_settings import default_reply
-        except ImportError:
+        default_reply = settings.DEFAULT_REPLY
+        if default_reply is None:
             default_reply = [
                 u'Bad command "{}", You can ask me one of the following '
                 u'questions:\n'.format(
@@ -201,7 +203,7 @@ class Message(object):
             return text
 
     @unicode_compact
-    def reply_webapi(self, text):
+    def reply_webapi(self, text, attachments=None, as_user=True):
         """
             Send a reply to the sender using Web API
 
@@ -209,10 +211,10 @@ class Message(object):
             when using a bot integration)
         """
         text = self.gen_reply(text)
-        self.send_webapi(text)
+        self.send_webapi(text, attachments=attachments, as_user=as_user)
 
     @unicode_compact
-    def send_webapi(self, text, attachments=None):
+    def send_webapi(self, text, attachments=None, as_user=True):
         """
             Send a reply using Web API
 
@@ -222,7 +224,8 @@ class Message(object):
         self._client.send_message(
             self._body['channel'],
             text,
-            attachments=attachments)
+            attachments=attachments,
+            as_user=as_user)
 
     @unicode_compact
     def reply(self, text):

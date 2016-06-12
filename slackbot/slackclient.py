@@ -5,6 +5,8 @@ import os
 import json
 import logging
 import time
+from ssl import SSLError
+
 import slacker
 from six import iteritems
 
@@ -36,6 +38,7 @@ class SlackClient(object):
 
     def rtm_connect(self):
         reply = self.webapi.rtm.start().body
+        time.sleep(1)
         self.parse_slack_login_data(reply)
 
     def reconnect(self):
@@ -44,9 +47,9 @@ class SlackClient(object):
                 self.rtm_connect()
                 logger.warning('reconnected to slack rtm websocket')
                 return
-            except:
-                logger.exception('failed to reconnect')
-                time.sleep(1)
+            except Exception as e:
+                logger.exception('failed to reconnect: %s', e)
+                time.sleep(5)
 
     def parse_slack_login_data(self, login_data):
         self.login_data = login_data
@@ -56,11 +59,9 @@ class SlackClient(object):
         self.parse_channel_data(login_data['channels'])
         self.parse_channel_data(login_data['groups'])
         self.parse_channel_data(login_data['ims'])
-        try:
-            self.websocket = create_connection(self.login_data['url'])
-            self.websocket.sock.setblocking(0)
-        except:
-            raise SlackConnectionError
+
+        self.websocket = create_connection(self.login_data['url'])
+        self.websocket.sock.setblocking(0)
 
     def parse_channel_data(self, channel_data):
         self.channels.update({c['id']: c for c in channel_data})
@@ -85,7 +86,11 @@ class SlackClient(object):
                 else:
                     logger.warning('websocket exception: %s', e)
                 self.reconnect()
-            except:
+            except Exception as e:
+                if isinstance(e, SSLError) and e.errno == 2:
+                    pass
+                else:
+                    logger.warning('Exception in websocket_safe_read: %s', e)
                 return data.rstrip()
 
     def rtm_read(self):
@@ -112,14 +117,15 @@ class SlackClient(object):
                                  filename=fname,
                                  initial_comment=comment)
 
-    def send_message(self, channel, message, attachments=None):
+    def send_message(self, channel, message, attachments=None, as_user=True):
         self.webapi.chat.post_message(
                 channel,
                 message,
                 username=self.login_data['self']['name'],
                 icon_url=self.bot_icon,
                 icon_emoji=self.bot_emoji,
-                attachments=attachments)
+                attachments=attachments,
+                as_user=as_user)
 
     def get_channel(self, channel_id):
         return Channel(self, self.channels[channel_id])

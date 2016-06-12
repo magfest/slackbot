@@ -63,3 +63,28 @@ def listen_to(matchstr, flags=0):
         return func
 
     return wrapper
+
+
+# def default_reply(matchstr=r'^.*$', flags=0):
+def default_reply(*args, **kwargs):
+    """
+    Decorator declaring the wrapped function to the default reply hanlder.
+
+    May be invoked as a simple, argument-less decorator (i.e. ``@default_reply``) or
+    with arguments customizing its behavior (e.g. ``@default_reply(matchstr='pattern')``).
+    """
+    invoked = bool(not args or kwargs)
+    matchstr = kwargs.pop('matchstr', r'^.*$')
+    flags = kwargs.pop('flags', 0)
+
+    if not invoked:
+        func = args[0]
+
+    def wrapper(func):
+        PluginsManager.commands['default_reply'][
+            re.compile(matchstr, flags)] = func
+        logger.info('registered default_reply plugin "%s" to "%s"', func.__name__,
+                    matchstr)
+        return func
+
+    return wrapper if invoked else wrapper(func)
